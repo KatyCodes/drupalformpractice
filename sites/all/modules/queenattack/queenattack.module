@@ -22,11 +22,15 @@ function queenattack_form() {
         '#title' => 'Queen X Coordinate',
         '#type' => 'textfield',
         '#description' => t('Please enter queen\'s x coordinate.'),
+        '#required' => TRUE,
+        '#element_validate' => array('element_validate_integer_positive','element_validate_chessboard'),
     );
     $form['queen_y'] = array(
         '#title' => 'Queen Y Coordinate',
         '#type' => 'textfield',
         '#description' => t('Please enter queen\'s y coordinates.'),
+        '#required' => TRUE,
+        '#element_validate' => array('element_validate_integer_positive','element_validate_chessboard'),
     );
 
 
@@ -34,20 +38,36 @@ function queenattack_form() {
         '#title' => 'Target X Coordinate',
         '#type' => 'textfield',
         '#description' => t('Please enter target\'s x coordinate.'),
+        '#required' => TRUE,
+        '#element_validate' => array('element_validate_integer_positive','element_validate_chessboard'),
     );
     $form['target_y'] = array(
         '#title' => 'Target Y Coordinate',
         '#type' => 'textfield',
         '#description' => t('Please enter target\'s y coordinates.'),
+        '#required' => TRUE,
+        '#element_validate' => array('element_validate_integer_positive','element_validate_chessboard'),
     );
 
 
     $form['submit'] = array(
         '#type' => 'submit',
-        '#value' => 'Calculate If the Queen can Attack',
+        '#value' => 'Can the Queen Attack?',
     );
 
     return $form;
+}
+
+function element_validate_chessboard($element) {
+    if ($element['#value'] > 8 || $element['#value'] < 0) {
+        form_error($element, t('Number must be between 1 and 8.'));
+    }
+}
+
+function queenattack_form_validate($form, &$form_state) {
+  if ($form_state['values']['queen_x'] == $form_state['values']['target_x'] && $form_state['values']['queen_y'] == $form_state['values']['target_y']) {
+      form_set_error('', 'Queen and Target cannot have the same coordinates, you silly person.');
+  }
 }
 
 function queenattack_form_submit($form, &$form_state) {
