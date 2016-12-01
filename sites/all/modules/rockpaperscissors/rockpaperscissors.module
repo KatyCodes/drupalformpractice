@@ -1,0 +1,104 @@
+<?php
+
+function rockpaperscissors_menu() {
+    $items['rockpaperscissors'] = array(
+        'title' => 'Play rock paper scissors: Player One',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('rockpaperscissors_player_one_form'),
+        'access callback' => TRUE,
+        'type' => MENU_NORMAL_ITEM,
+    );
+    $items['rockpaperscissors/player_two'] = array(
+        'title' => 'Player Two: Yer Move, Buddy.',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('rockpaperscissors_player_two_form'),
+        'access callback' => TRUE,
+        'type' => MENU_CALLBACK,
+    );
+    $items['rockpaperscissors_success_page'] = array(
+        'title' => 'Success',
+        'page callback' => 'rockpaperscissors_success',
+        'access callback' => TRUE,
+        'type' => MENU_CALLBACK,
+    );
+    return $items;
+}
+
+function rockpaperscissors_player_one_form() {
+    $form['choice'] = array(
+        '#title' => 'Choose Your Weapon!',
+        '#type' => 'textfield',
+        '#description' => t('What\'s it gonna be: rock, paper, or scissors?'),
+        '#required' => TRUE,
+        '#element_validate' => array('player_choice_validate'),
+    );
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Go!',
+    );
+
+    return $form;
+}
+
+function rockpaperscissors_player_two_form() {
+    $form['choice'] = array(
+        '#title' => 'Choose Your Weapon!',
+        '#type' => 'textfield',
+        '#description' => t('What\'s it gonna be: rock, paper, or scissors?'),
+        '#required' => TRUE,
+        '#element_validate' => array('player_choice_validate'),
+    );
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Go!',
+    );
+
+    return $form;
+}
+
+function player_choice_validate($element) {
+  $valid_choices = array('rock','paper','scissors');
+  $player_choice = strtolower($element['#value']);
+  if (!in_array($player_choice, $valid_choices)) {
+      form_set_error('choice', 'You putz, learn to play.');
+  }
+}
+
+function rockpaperscissors_player_one_form_submit($form, &$form_state) {
+
+    $choice = strtolower($form_state['values']['choice']);
+
+    $_SESSION['rockpaperscissors_player_one_choice'] = $choice;
+    $form_state['redirect'] = 'rockpaperscissors/player_two';
+}
+
+function rockpaperscissors_player_two_form_submit($form, &$form_state) {
+
+    $choice_2 = strtolower($form_state['values']['choice']);
+    $choice_1 = $_SESSION['rockpaperscissors_player_one_choice'];
+
+    function playGame($player1, $player2) {
+      if (($player1 == "rock" && $player2 == "scissors")  || ($player1 == "paper" && $player2 == "rock") || ($player1 == "scissors" && $player2 == "paper")) {
+        return "Player 1 Wins!";
+      } elseif (($player1 == "scissors" && $player2 == "rock") || ($player1 == "rock" && $player2 == "paper") || ($player2 == "scissors" && $player1 == "paper")) {
+        return "Player 2 Wins!";
+      } else {
+        return "Draw!";
+      }
+    }
+
+    $game_result = playGame($choice_1, $choice_2);
+
+    $_SESSION['rockpaperscissors_player_two_choice'] = $choice_2;
+    $_SESSION['rockpaperscissors_results'] = $game_result;
+    $form_state['redirect'] = 'rockpaperscissors_success_page';
+}
+
+function rockpaperscissors_success() {
+    $answer = 'Player One chose: ' . ucfirst($_SESSION['rockpaperscissors_player_one_choice']) . '<br>';
+    $answer .= 'Player Two chose: ' . ucfirst($_SESSION['rockpaperscissors_player_two_choice']) . '<br>';
+    $answer .= 'The Result: ' . $_SESSION['rockpaperscissors_results'];
+    return $answer;
+}
