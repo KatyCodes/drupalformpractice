@@ -1,0 +1,5 @@
+name = Triangular
+description = Determines the type of triangle based on side lengths.
+package = Epicodus Examples
+core = 7.x
+files[] = triangular.module

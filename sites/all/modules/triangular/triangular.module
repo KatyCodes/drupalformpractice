@@ -1,0 +1,91 @@
+<?php
+
+function triangular_menu() {
+    $items['triangular'] = array(
+        'title' => 'Determine Triangularity',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('triangular_form'),
+        'access callback' => TRUE,
+        'type' => MENU_NORMAL_ITEM,
+    );
+    $items['triangular_success_page'] = array(
+        'title' => 'Success',
+        'page callback' => 'triangular_success',
+        'access callback' => TRUE,
+        'type' => MENU_CALLBACK,
+    );
+    return $items;
+}
+
+function triangular_form() {
+    $form['side_one'] = array(
+        '#title' => 'Side One',
+        '#type' => 'textfield',
+        '#description' => t('Length of side one.'),
+        '#required' => TRUE,
+        '#element_validate' => array('element_validate_integer_positive'),
+    );
+    $form['side_two'] = array(
+        '#title' => 'Side Two',
+        '#type' => 'textfield',
+        '#description' => t('Length of side two.'),
+        '#required' => TRUE,
+        '#element_validate' => array('element_validate_integer_positive'),
+    );
+
+    $form['side_three'] = array(
+        '#title' => 'Side Three',
+        '#type' => 'textfield',
+        '#description' => t('Length of side three.'),
+        '#required' => TRUE,
+        '#element_validate' => array('element_validate_integer_positive'),
+    );
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Shall We Triangle?',
+    );
+
+    return $form;
+}
+
+function triangular_form_validate($form, &$form_state) {
+  function is_valid_triangle($one, $two, $three) {
+    if (($one + $two < $three) || ($two + $three < $one) || ($one + $three < $two)) {
+      return FALSE;
+    } else {
+      return TRUE;
+    }
+  }
+
+  $side_one = $form_state['values']['side_one'];
+  $side_two = $form_state['values']['side_two'];
+  $side_three = $form_state['values']['side_three'];
+
+  if (!is_valid_triangle($side_one, $side_two, $side_three)) {
+    $error_message = $side_one . ', ' . $side_two . ', and ' . $side_three . ' do not make a valid triangle, silly!';
+    form_set_error('', $error_message);
+  }
+}
+
+function triangular_form_submit($form, &$form_state) {
+    $side_one = $form_state['values']['side_one'];
+    $side_two = $form_state['values']['side_two'];
+    $side_three = $form_state['values']['side_three'];
+
+    if ($side_one == $side_two && $side_two == $side_three) {
+      $triangle_type = "Equilateral";
+    } elseif ($side_one == $side_two || $side_two == $side_three || $side_one == $side_three) {
+      $triangle_type = "Isosceles";
+    } else {
+      $triangle_type = "Scalene, baby";
+    }
+
+    $_SESSION['triangular_output'] = $triangle_type;
+    $form_state['redirect'] = 'triangular_success_page';
+}
+
+function triangular_success() {
+    $answer = $_SESSION['triangular_output'];
+    return 'The triangle in question is of the type ' . $answer . '.';
+}
